@@ -51,8 +51,7 @@ Limitations:
 
 Scripts Download Location:
 --------------------------
-<git-hub Location>
-
+https://github.com/GDC-ITAuto/Netcool-Impact-Upload/tree/main
 
 REVISION HISTORY:
 -----------------
