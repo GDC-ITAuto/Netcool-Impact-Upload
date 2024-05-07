@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Comparison Report</title>
+    <!-- CSS Styles -->
+    <style>
+        /* Basic styling for the body */
+       
+        body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-image: url('https://www.ibm.com/design/language/static/d364f8541a48fa723bb502e883144239/040c5/2306_73_IDL_gallery.jpg');
+        background-size: cover;
+        font-size: 15px; /* Adjust the font size */
+        overflow-x: hidden; /* Hide horizontal scrollbar initially */
+    }
+
+        /* Styling for the container */
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Styling for sections */
+        .section {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* Class for matched and mismatched data */
+        .match {
+            color: green;
+        }
+
+        .mismatch {
+            color: red;
+        }
+
+        /* Styling for report boxes */
+        .box {
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 12px;
+            flex: 1; /* Flex basis for each box */
+        }
+
+        /* Styling for the parameter label */
+        .box strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Styling for box rows */
+        .box-row {
+            display: flex;
+            gap: 12px; /* Gap between boxes */
+            margin-bottom: 12px; /* Margin between rows */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Metric descriptions section -->
+        <div class="section" id="metrics-section">
+            <h3>Metric Descriptions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Netcool Impact Version</td>
+                        <td>Most Recent Version of Netcool Impact</td>
+                    </tr>
+                    <tr>
+                        <td>LDAP Integration</td>
+                        <td>TRUE: Netcool Impact is integrated with LDAP<br>FALSE: Netcool Impact is either using the Netcool Omnibus or file-based registry for user authentication</td>
+                    </tr>
+                    <tr>
+                        <td>Policies Count</td>
+                        <td>Count of Number of Policies created in Netcool Impact</td>
+                    </tr>
+                    <tr>
+                        <td>OpViews Count</td>
+                        <td>Count of Number of Operator Views created in Netcool Impact</td>
+                    </tr>
+                    <tr>
+                        <td>Impact Server Count</td>
+                        <td>Number of Impact Server instances in the Impact cluster</td>
+                    </tr>
+                    <tr>
+                        <td>Xms</td>
+                        <td>Minimum memory allocation pool for Java Virtual Machine (JVM)</td>
+                    </tr>
+                    <tr>
+                        <td>Xmx</td>
+                        <td>Maximum memory allocation pool for Java Virtual Machine (JVM)</td>
+                    </tr>
+                    <tr>
+                        <td>EventProcessorMinThreads</td>
+                        <td>Minimum number of threads Impact server attempts to run at a time</td>
+                    </tr>
+                    <tr>
+                        <td>EventProcessorMaxThreads</td>
+                        <td>Maximum number of threads Impact server attempts to run at a time</td>
+                    </tr>
+                    <tr>
+                        <td>CPUs</td>
+                        <td>Count of Total Number of CPUs in the Impact Host System</td>
+                    </tr>
+                    <tr>
+                        <td>Memory</td>
+                        <td>Total physical memory available in the Impact Host System</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Report generation section -->
+        <div class="section" id="report-section">
+            <h3>File Upload and Comparison Report</h3>
+            <!-- File input for report generation -->
+            <input type="file" id="fileInput" accept=".json">
+            <button onclick="generateReport()">Generate Report</button>
+            <!-- Report container -->
+            <div id="report-container">
+                <h4>Report</h4>
+                <div id="report"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for handling file input and generating report -->
+    <script>
+        function generateReport() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please upload a file.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    displayReport(data);
+                } catch (error) {
+                    alert("Error parsing JSON file. Please upload a valid JSON file.");
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function displayReport(data) {
+            const report = document.getElementById('report');
+            report.innerHTML = ''; // Clear previous report
+
+            // Define expected values for comparison
+            const comparisons = [
+                {
+                    parameter: 'Netcool Impact Version',
+                    actual: data.ImpactVersion,
+                    expected: '7.1.0.28'
+                },
+                {
+                    parameter: 'LDAP Integration',
+                    actual: data.LDAPIntegration,
+                    expected: 'FALSE'
+                },
+                {
+                    parameter: 'Policies Count',
+                    actual: data.PoliciesCount,
+                    expected: 200
+                },
+                {
+                    parameter: 'OpViews Count',
+                    actual: data.OpViewsCount,
+                    expected: 12
+                },
+                {
+                    parameter: 'Impact Server Count',
+                    actual: data.ImpactServerCount,
+                    expected: '1'
+                },
+                {
+                    parameter: 'Xms',
+                    actual: data.Xms,
+                    expected: '512M'
+                },
+                {
+                    parameter: 'Xmx',
+                    actual: data.Xmx,
+                    expected: '2400M'
+                },
+                {
+                    parameter: 'EventProcessorMinThreads',
+                    actual: data.EventProcessorMinThreads,
+                    expected: '50'
+                },
+                {
+                    parameter: 'EventProcessorMaxThreads',
+                    actual: data.EventProcessorMaxThreads,
+                    expected: '100'
+                },
+                {
+                    parameter: 'CPUs',
+                    actual: data.CPUs,
+                    expected: '1'
+                },
+                {
+                    parameter: 'Memory',
+                    actual: data.Memory,
+                    expected: '5977412'
+                }
+            ];
+
+            // Iterate through comparisons and create boxes
+            for (let i = 0; i < comparisons.length; i += 2) {
+                // Create a new row for every two comparisons
+                const boxRow = document.createElement('div');
+                boxRow.className = 'box-row';
+                
+                // Add first box to the row
+                const comparison1 = comparisons[i];
+                const box1 = createBox(comparison1);
+                boxRow.appendChild(box1);
+
+                // Add second box if it exists
+                if (i + 1 < comparisons.length) {
+                    const comparison2 = comparisons[i + 1];
+                    const box2 = createBox(comparison2);
+                    boxRow.appendChild(box2);
+                }
+
+                // Append the row to the report
+                report.appendChild(boxRow);
+            }
+        }
+
+        function createBox({ parameter, actual, expected }) {
+            const isMatch = actual.toString() === expected.toString();
+            const comparisonClass = isMatch ? 'match' : 'mismatch';
+
+            // Create a box element
+            const box = document.createElement('div');
+            box.className = 'box';
+
+            // Populate the box with parameter, actual value, expected value, and comparison result
+            box.innerHTML = `
+                <strong>Parameter:</strong> ${parameter}<br>
+                <strong>Actual Value:</strong> ${actual}<br>
+                <strong>Expected Value:</strong> ${expected}<br>
+                <strong>Comparison:</strong> <span class="${comparisonClass}">${isMatch ? 'Match' : 'Mismatch'}</span>
+                <hr>
+            `;
+
+            return box;
+        }
+    </script>
+</body>
+
+</html>
